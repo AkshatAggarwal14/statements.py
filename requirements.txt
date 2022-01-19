@@ -3,5 +3,5 @@ requests
 aiohttp
 asyncio
 fastapi
-BeautifulSoup
+beautifulsoup4
 pylatexenc
