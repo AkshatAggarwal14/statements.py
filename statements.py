@@ -34,6 +34,7 @@ async def parse_statement(c_id: str, p_id: str):
                         soup = BeautifulSoup(html, 'html.parser')
                         resp = {}
                         resp['status'] = 'OK'
+                        resp['details'] = 'problem fetched'
                         resp['title'] = await get(soup, 'div', {'class': 'title'}, 0)
                         resp['time_limit'] = await get(soup, 'div', {'class': 'time-limit'})
                         resp['memory_limit'] = await get(soup, 'div', {'class': 'memory-limit'})
@@ -68,6 +69,6 @@ async def parse_statement(c_id: str, p_id: str):
                         resp['sample_output'] = sample_outs
                         return resp
                     else:
-                        return {'status': f"{p_url} not accessible"}
+                        return {'status': 'ERROR', 'details': f"{p_url} not accessible"}
             else:
-                return {'status': f"{c_url} not accessible"}
+                return {'status': 'ERROR', 'details': f"{c_url} not accessible"}
