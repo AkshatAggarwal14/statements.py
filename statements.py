@@ -69,3 +69,5 @@ async def parse_statement(c_id: str, p_id: str):
                         return resp
                     else:
                         return {'status': f"{p_url} not accessible"}
+            else:
+                return {'status': f"{c_url} not accessible"}
