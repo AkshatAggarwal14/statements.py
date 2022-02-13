@@ -1,7 +1,5 @@
 uvicorn
 requests
 aiohttp
-asyncio
 fastapi
 beautifulsoup4
-pylatexenc
