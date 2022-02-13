@@ -7,11 +7,9 @@ async def prettify(s: str) -> str:
     return (' '.join(s.split())).strip()
 
 
-async def get(which_soup, to_find, attrs_: dict = {}, index=None, getList=False):
+async def get(which_soup, to_find, attrs_: dict = {}, index=None):
     divs = [div.find(text=True, recursive=False)
             for div in which_soup.find_all(to_find, attrs=attrs_)]
-    if getList:
-        return divs
     if index != None:
         return divs[index]
     return ' '.join(divs)
@@ -54,19 +52,22 @@ async def parse_statement(c_id: str, p_id: str):
                             resp['output_specification'] = [
                                 await get_text_from_latex(await prettify(para.text)) for para in paras.find_all('p')]
 
+                        resp['samples'] = []
                         sample_ins = []
                         for div in soup.find_all('div', {'class': 'input'}):
                             for input in div.find_all('pre'):
                                 sample_ins.append(
                                     input.text.strip().splitlines())
-                        resp['sample_input'] = sample_ins
-
                         sample_outs = []
                         for div in soup.find_all('div', {'class': 'output'}):
                             for output in div.find_all('pre'):
                                 sample_outs.append(
                                     output.text.strip().splitlines())
-                        resp['sample_output'] = sample_outs
+
+                        for i in range(0, len(sample_ins)):
+                            resp['samples'].append(
+                                {'input': sample_ins[i], 'output': sample_outs[i]})
+
                         return resp
                     else:
                         return {'status': 'ERROR', 'details': f"{p_url} not accessible"}
