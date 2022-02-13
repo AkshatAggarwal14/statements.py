@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 import statements
-import time
 from fastapi.openapi.utils import get_openapi
 app = FastAPI(title="Statements API", redoc_url="/")
 
