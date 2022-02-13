@@ -45,11 +45,11 @@ async def parse_statement(c_id: str, p_id: str):
                                     await get_text_from_latex(await prettify(para.text)) for para in paras]
 
                         for paras in soup.find_all('div', {'class': 'input-specification'}):
-                            resp['input_specification'] = [
+                            resp['input_format'] = [
                                 await get_text_from_latex(await prettify(para.text)) for para in paras.find_all('p')]
 
                         for paras in soup.find_all('div', {'class': 'output-specification'}):
-                            resp['output_specification'] = [
+                            resp['output_format'] = [
                                 await get_text_from_latex(await prettify(para.text)) for para in paras.find_all('p')]
 
                         resp['samples'] = []
