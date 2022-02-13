@@ -33,7 +33,7 @@ async def parse_statement(c_id: str, p_id: str):
                         resp = {}
                         resp['status'] = 'OK'
                         resp['details'] = 'problem fetched'
-                        resp['title'] = await get(soup, 'div', {'class': 'title'}, 0)
+                        resp['title'] = (await get(soup, 'div', {'class': 'title'}, 0))[3:]
                         resp['time_limit'] = await get(soup, 'div', {'class': 'time-limit'})
                         resp['memory_limit'] = await get(soup, 'div', {'class': 'memory-limit'})
                         resp['input'] = await get(soup, 'div', {'class': 'input-file'})
