@@ -28,11 +28,11 @@ async def parse_statement(c_id: str, p_id: str):
             if page.status == 200:
                 p_url = f'http://codeforces.com/contest/{c_id}/problem/{p_id}'
                 async with session.get(p_url, allow_redirects=False) as page:
-                    resp = {}
                     if page.status == 200:
                         html = await page.read()
                         page.close()
                         soup = BeautifulSoup(html, 'html.parser')
+                        resp = {}
                         resp['status'] = 'OK'
                         resp['title'] = await get(soup, 'div', {'class': 'title'}, 0)
                         resp['time_limit'] = await get(soup, 'div', {'class': 'time-limit'})
@@ -66,6 +66,6 @@ async def parse_statement(c_id: str, p_id: str):
                                 sample_outs.append(
                                     output.text.strip().splitlines())
                         resp['sample_output'] = sample_outs
+                        return resp
                     else:
-                        resp = {'status': f"{p_url} not accessible"}
-                    return resp
+                        return {'status': f"{p_url} not accessible"}
