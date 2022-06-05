@@ -1,6 +1,4 @@
-# uvicorn
 requests
-aiohttp
 fastapi
 beautifulsoup4
 pylatexenc

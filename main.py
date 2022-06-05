@@ -5,9 +5,8 @@ app = FastAPI(title="Statements API", redoc_url="/")
 
 
 @app.get("/statement")
-async def statement(c_id: str, p_id: str):
-    resp = await statements.parse_statement(c_id, p_id)
-    return resp
+def statement(c_id: str, p_id: str):
+    return statements.parse_statement(c_id, p_id)
 
 
 def custom_openapi():
@@ -15,7 +14,7 @@ def custom_openapi():
         return app.openapi_schema
     openapi_schema = get_openapi(
         title="Statements API",
-        version="1.1",
+        version="1.2",
         description="",
         routes=app.routes,
     )
