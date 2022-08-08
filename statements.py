@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
 from pylatexenc.latex2text import LatexNodes2Text
-import adhoc_cf_rcpc_token_decoder as token_decoder
 
 
 def prettify(s: str) -> str:
@@ -20,20 +19,17 @@ def get_text_from_latex(s: str) -> str:
     return prettify(LatexNodes2Text().latex_to_text(s))
 
 
-# cookies = {
-#     'RCPC': '8743b9ca64f95d97212dd17d1bf6c726'
-# }
-
-
 def parse_statement(c_id: str, p_id: str):
-    RCPC = token_decoder.get_RCPC()
-    cookies = {'RCPC': RCPC}
-    print('RCPC Token Decoded: {}'.format(RCPC))
+    # RCPC = token_decoder.get_RCPC()
+    # cookies = {'RCPC': RCPC}
+    # print('RCPC Token Decoded: {}'.format(RCPC))
     c_url = f'http://codeforces.com/contest/{c_id}'
     p_url = f'{c_url}/problem/{p_id}'
-    page = requests.get(c_url, cookies=cookies)
+    # page = requests.get(c_url, cookies=cookies)
+    page = requests.get(c_url)
     if page.status_code == 200:
-        page = requests.get(p_url, cookies=cookies)
+        # page = requests.get(p_url, cookies=cookies)
+        page = requests.get(p_url)
         if page.status_code == 200:
             html = page.text
             soup = BeautifulSoup(html, 'html.parser')
@@ -66,8 +62,13 @@ def parse_statement(c_id: str, p_id: str):
             sample_ins = []
             for div in soup.find_all('div', {'class': 'input'}):
                 for input in div.find_all('pre'):
+                    test_case = ""
+                    for x in input.find_all('div', {'class': lambda value: value and value.startswith("test-example-line")}):
+                        test_case += x.get_text() + '\n'
+                    if len(test_case) == 0:  # if not multiple test cases in a given sample
+                        test_case = input.get_text()
                     sample_ins.append(
-                        input.text.strip().splitlines())
+                        test_case.strip().splitlines())
             sample_outs = []
             for div in soup.find_all('div', {'class': 'output'}):
                 for output in div.find_all('pre'):
