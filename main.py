@@ -25,7 +25,7 @@ def custom_openapi():
     )
     # print(openapi_schema)
     openapi_schema["info"]["x-logo"] = {
-        "url": "logo.png"
+        "url": "https://i.ibb.co/zhW9Q8c/logo.png"
     }
     app.openapi_schema = openapi_schema
     return app.openapi_schema
