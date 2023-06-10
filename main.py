@@ -4,9 +4,10 @@ from fastapi.openapi.utils import get_openapi
 app = FastAPI(title="Statements API", redoc_url="/")
 
 
-@app.get("/statement")
-def statement(c_id: str, p_id: str):
-    return statements.parse_statement(c_id, p_id)
+@app.get("/statement/{contest_id}/{problem_id}")
+async def statement(contest_id: str, problem_id: str):
+    resp = await statements.parse_statement(contest_id, problem_id)
+    return resp
 
 
 @app.get('/favicon.ico', include_in_schema=False)
@@ -19,7 +20,7 @@ def custom_openapi():
         return app.openapi_schema
     openapi_schema = get_openapi(
         title="Statements API",
-        version="1.3",
+        version="2.0",
         description="",
         routes=app.routes
     )

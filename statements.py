@@ -1,13 +1,9 @@
-from bs4 import BeautifulSoup
-import requests
+from bs4 import BeautifulSoup as bs
+import aiohttp
+import asyncio
 from pylatexenc.latex2text import LatexNodes2Text
 
-
-def prettify(s: str) -> str:
-    return (' '.join(s.split())).strip()
-
-
-def get(which_soup, to_find, attrs_: dict = {}, index=None):
+async def get(which_soup, to_find, attrs_: dict = {}, index=None):
     divs = [div.find(text=True, recursive=False)
             for div in which_soup.find_all(to_find, attrs=attrs_)]
     if index != None:
@@ -15,48 +11,51 @@ def get(which_soup, to_find, attrs_: dict = {}, index=None):
     return ' '.join(divs)
 
 
-def get_text_from_latex(s: str) -> str:
-    return prettify(LatexNodes2Text().latex_to_text(s))
+async def get_text_from_latex(s: str) -> str:
+    return ' '.join(LatexNodes2Text().latex_to_text(s).split()).strip()
 
 
-def parse_statement(c_id: str, p_id: str):
-    # RCPC = token_decoder.get_RCPC()
-    # cookies = {'RCPC': RCPC}
-    # print('RCPC Token Decoded: {}'.format(RCPC))
-    c_url = f'http://codeforces.com/contest/{c_id}'
+async def parse_statement(c_id: str, p_id: str):
+    c_url = f'https://codeforces.com/contest/{c_id}'
     p_url = f'{c_url}/problem/{p_id}'
-    # page = requests.get(c_url, cookies=cookies)
-    page = requests.get(c_url)
-    if page.status_code == 200:
-        # page = requests.get(p_url, cookies=cookies)
-        page = requests.get(p_url)
-        if page.status_code == 200:
-            html = page.text
-            soup = BeautifulSoup(html, 'html.parser')
+    try:
+        async with aiohttp.ClientSession() as session:
+            tasks = [
+                session.get(c_url, allow_redirects=False),
+                session.get(p_url, allow_redirects=False)
+            ]
+            cpage, page = await asyncio.gather(*tasks)
+
+            if cpage.status != 200:
+                return {'status': 'ERROR', 'details': f"{c_url} not accessible"}
+
+            if page.status != 200:
+                return {'status': 'ERROR', 'details': f"{p_url} not accessible"}
+
+            html = await page.text()
+            soup = bs(html, 'html.parser')
+
             resp = {}
             resp['status'] = 'OK'
             resp['details'] = 'problem fetched'
-            resp['title'] = (
-                get(soup, 'div', {'class': 'title'}, 0))[3:]
-            resp['time_limit'] = get(
-                soup, 'div', {'class': 'time-limit'})
-            resp['memory_limit'] = get(
-                soup, 'div', {'class': 'memory-limit'})
-            resp['input'] = get(soup, 'div', {'class': 'input-file'})
-            resp['output'] = get(soup, 'div', {'class': 'output-file'})
+            resp['title'] = (await get(soup, 'div', {'class': 'title'}, 0))[3:].strip()
+            resp['time_limit'] = await get(soup, 'div', {'class': 'time-limit'})
+            resp['memory_limit'] = await get(soup, 'div', {'class': 'memory-limit'})
+            resp['input'] = await get(soup, 'div', {'class': 'input-file'})
+            resp['output'] = await get(soup, 'div', {'class': 'output-file'})
 
             for div in soup.find_all('div', {'class': 'problem-statement'}):
                 for paras in div.find_all('div', {'class': None}):
                     resp['statement'] = [
-                        get_text_from_latex(prettify(para.text)) for para in paras]
+                        await get_text_from_latex(para.text) for para in paras]
 
             for paras in soup.find_all('div', {'class': 'input-specification'}):
                 resp['input_format'] = [
-                    get_text_from_latex(prettify(para.text)) for para in paras.find_all('p')]
+                    await get_text_from_latex(para.text) for para in paras.find_all('p')]
 
             for paras in soup.find_all('div', {'class': 'output-specification'}):
                 resp['output_format'] = [
-                    get_text_from_latex(prettify(para.text)) for para in paras.find_all('p')]
+                    await get_text_from_latex(para.text) for para in paras.find_all('p')]
 
             resp['samples'] = []
             sample_ins = []
@@ -80,7 +79,5 @@ def parse_statement(c_id: str, p_id: str):
                     {'input': sample_ins[i], 'output': sample_outs[i]})
 
             return resp
-        else:
-            return {'status': 'ERROR', 'details': f"{p_url} not accessible"}
-    else:
-        return {'status': 'ERROR', 'details': f"{c_url} not accessible"}
+    except:
+        return {'status': 'ERROR', 'details': 'Internal Server Error :('}
